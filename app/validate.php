@@ -34,8 +34,16 @@ function validateInputs(array $inputs) : array
 
             case AGE_KEY:
                 $ages = explode(',', $inputs[$key]);
-                if (empty($ages) || max($ages) < MINIMUM_REQUIRED_AGE) {
+
+                if ($ages[0] < MINIMUM_REQUIRED_AGE) {
                     $errors[$key] = $errorMessage;
+                }
+
+                foreach ($ages as $age) {
+                    if ($age > MAXIMUM_ALLOWED_AGE) {
+
+                        $errors[SECONDARY_AGE] = MANDATORY_INPUTS[SECONDARY_AGE];
+                    }
                 }
                 break;
         }

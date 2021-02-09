@@ -32,6 +32,8 @@ const LOAD_VALUE_KEY = 'load_value';
 
 const AGE_KEY = 'age';
 
+const SECONDARY_AGE = 'secondary_age';
+
 const TOTAL_KEY = 'total';
 
 const QUOTATION_ID_KEY = 'quotation_id';
@@ -47,7 +49,8 @@ const MANDATORY_INPUTS = [
     CURRENCY_ID_KEY => 'Select a valid currency',
     START_DATE_KEY => 'Select valid start date',
     END_DATE_KEY => 'Select valid end date',
-    AGE_KEY => 'Provide valid age'
+    AGE_KEY => 'Primary guest age should be above 18!',
+    SECONDARY_AGE => 'Guest age should be less than 71!'
 ];
 
 const RESPONSE_SUCCESS_CODE = 200;
@@ -66,4 +69,4 @@ const CURRENCIES = [
 
 const MINIMUM_REQUIRED_AGE = 18;
 
-
+const MAXIMUM_ALLOWED_AGE = 70;
