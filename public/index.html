@@ -57,7 +57,7 @@
             <div class="card-body" id="guests-container">
                 <label for="age">Enter your Primary guest's age:</label>
                 <div class="form-group">
-                    <input type="number" min="1" max="200" class="form-control" id="age" placeholder="Enter your primary guest age" name="age" required value="20">
+                    <input type="number" min="1" max="200" class="form-control" id="age" placeholder="Enter your primary guest age" name="age" required>
                 </div>
 
                 <label>Secondary guests</label>
@@ -66,15 +66,15 @@
         <div class="container p-3 my-3 border">
             <div class="form-group">
                 <label for="currency">Currency:</label>
-                <select id="currency" class="form-control js-example-basic-single" style="width: 100% !important;" name="currency"></select>
+                <select id="currency" class="form-control currency-selector" style="width: 100% !important;" name="currency"></select>
             </div>
             <div class="form-group">
                 <label for="start-date">Start Date:</label>
-                <input type="date" class="form-control" id="start-date" placeholder="Select start date" name="start-end" required value="2021-10-12">
+                <input type="date" class="form-control" id="start-date" placeholder="Select start date" name="start-end" required>
             </div>
             <div class="form-group">
                 <label for="end-date">End Date:</label>
-                <input type="date" class="form-control" id="end-date" placeholder="Select end date" name="end-end" required value="2021-11-12">
+                <input type="date" class="form-control" id="end-date" placeholder="Select end date" name="end-end" required>
             </div>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
@@ -87,7 +87,7 @@
         document.getElementById("start-date").setAttribute("min", today);
         document.getElementById("end-date").setAttribute("min", today);
 
-        $('.js-example-basic-single').select2({
+        $('.currency-selector').select2({
             data: CURRENCIES
         });
 
@@ -102,24 +102,37 @@
 
             $('#errors').empty();
             $("#errors-container").hide();
+            $("#success-container").hide();
 
-            const primaryAge = Math.trunc($('#age').val());
+            const primaryGuestAge = Math.trunc($('#age').val());
 
-            if (primaryAge < 18) {
-                $('#errors').text("Primary guest age can not be less than 18!");
+            if (primaryGuestAge < 18 || primaryGuestAge > 70) {
+                $('#errors').text("Primary guest age should be between 18 and 70!");
                 $("#errors-container").show();
                 return false;
             }
 
-            let optionalGuests = $('input[name="age-optional"]').map(function(){
+            let secondaryGuestsAge = $('input[name="age-optional"]').map(function(){
                 return Math.trunc(this.value);
             }).get();
 
-            postForm.age = primaryAge;
-
-            if (optionalGuests.join().length) {
-                postForm.age = postForm.age + "," + optionalGuests.join();
+            for (let [key, age] of Object.entries(secondaryGuestsAge)) {
+                if (age > 70) {
+                    $('#errors').text("Guest age should be less than 71!");
+                    $("#errors-container").show();
+                    return false;
+                }
             }
+
+            postForm.age = primaryGuestAge;
+
+            if (secondaryGuestsAge.join().length) {
+                postForm.age = postForm.age + "," + secondaryGuestsAge.join();
+            }
+
+            $('#errors').empty();
+            $("#errors-container").hide();
+            $("#success-container").hide();
 
             $.ajax({
                 type      : 'POST',
@@ -132,20 +145,25 @@
                 },
                 success   : function(data) {
                     $("#errors-container").hide();
-                    const { message, status } = data;
 
-                    if (status && message) {
+                    const { message } = data;
+
+                    if (message) {
                         $('#success-message').text(message.total + " " + message.currency_id);
                     }
 
                     $("#success-container").show();
                 },
                 error   : function (data) {
+                    $("#success-container").hide();
+
                     const errorResponse = data.responseJSON;
 
                     if (!errorResponse) {
                         $('#errors').text("Some thing went wrong. Please try again later!");
-                        return true;
+                        $("#errors-container").show();
+
+                        return false;
                     }
 
                     const inputErrors = errorResponse.inputErrors ?? {};
@@ -153,6 +171,8 @@
                     for (let [key, value] of Object.entries(inputErrors)) {
                         $("#errors").append(`<li>${value}</li>`);
                     }
+
+                    $("#errors-container").show();
 
                     return true;
                 }
